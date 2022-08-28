@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const server = require('http').Server(app)
@@ -5,6 +6,25 @@ const PORT = process.env.PORT || 8000
 const mqtt = require('mqtt')
 const WebSocket = require('ws')
 const ws = new WebSocket.Server({port: 8082})
+const ngrok = require('ngrok')
+
+const ngrokConnect = async () => {
+    const ngrokOptions = {
+        proto: 'tcp',
+        addr: 22,
+        authtoken:process.env.NGROK_TOKEN
+    }
+    console.log('requesting tunnel...')
+    const url = await ngrok.connect(ngrokOptions)
+    console.log(`url: ${url}`)
+    return url
+}
+const ngrokDisconnect = async () =>  {
+    await ngrok.disconnect()
+    await ngrok.kill()
+    console.log('disconnected!')
+    return 'disconnected!'
+}
 
 app.use(express.static('public'))
 
@@ -20,13 +40,12 @@ ws.on('connection', socket => {
     })
 })
 
-
 let options = {
-    host: '1a398270afa74ed49bee58f006c52c0f.s1.eu.hivemq.cloud',
-    port: 8883,
-    protocol: 'mqtts',
-    username: 'komputerkerja100@gmail.com',
-    password: 'Xilva2014pass'
+    host: process.env.MQTT_HOST,
+    port: process.env.MQTT_PORT,
+    protocol: process.env.MQTT_PROTOCOL,
+    username: process.env.MQTT_USER,
+    password: process.env.MQTT_PASSWORD,
 }
 let client = mqtt.connect(options);
 client.on('connect', function () {
@@ -35,10 +54,17 @@ client.on('connect', function () {
 client.on('error', function (error) {
     console.log(error);
 });
-client.on('message', function (topic, message) {
-    console.log('Received message:', topic, message.toString());
+client.on('message', async function(topic, message) {
+    if(message.toString() == "connect"){
+        const conn = await ngrokConnect();
+        client.publish('xilva/orangePi/pub/', conn);        
+    }else if(message.toString() == "disconnect"){
+        const dis = await ngrokDisconnect();
+        client.publish('xilva/orangePi/pub/', dis);
+    }
+    console.log(message.toString())
 });
-client.subscribe('my/test/topic');
-client.publish('my/test/topic', 'Hello');
+client.subscribe('xilva/orangePi/sub/');
+client.publish('xilva/orangePi/pub/', 'Hello from orange pi');
 
 server.listen(PORT, () => console.log(`server running on http://localhost:${PORT}`))
