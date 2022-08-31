@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 const server = require('http').Server(app)
-const PORT = process.env.PORT || 8000
+const PORT = process.env.PORT || 80
 const mqtt = require('mqtt')
 const WebSocket = require('ws')
 const ws = new WebSocket.Server({port: 8082})
@@ -29,15 +29,15 @@ const ngrokDisconnect = async () =>  {
 app.use(express.static('public'))
 
 ws.on('connection', socket => {
-    console.log('client connected!')
-    socket.on('close', () => console.log('client disconnect'))
-    socket.on('message', msg => {
-        ws.clients.forEach(function each(socketClient) {
-            if (socketClient !== socket && socketClient.readyState === WebSocket.OPEN) {
-              socketClient.send(msg.toString())
+    console.log('client connect')
+    socket.onclose = () => console.log('client leaved')
+    socket.onmessage = msg => {
+        ws.clients.forEach(client => {
+            if (client !== socket && client.readyState === WebSocket.OPEN) {
+                client.send(msg.data);
             }
         })
-    })
+    }
 })
 
 let options = {

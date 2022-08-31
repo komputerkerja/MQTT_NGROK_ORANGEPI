@@ -5,30 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script defer src="app.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <label>
-        Message
-        <input type="text" id="message">
-    </label><br>
-    <textarea name="chats" id="chats" cols="30" rows="10"></textarea>
-    <button id="send">Send</button>
 
-    <script>
-        const socket = new WebSocket('ws://' + location.hostname + ':8082')
-        socket.onopen = () => console.log('server connected!')
-        socket.onmessage = msg => {
-            let data = chats.value
-            data +=  "friend    : " + msg.data + '\n'
-            chats.value = data
-        }
-        send.addEventListener('click', e => {
-            let data = chats.value
-            data +=  "me        : " + message.value + '\n'
-            chats.value = data
-            socket.send(message.value)
-        })        
-    </script>
+    
+<div class="input-group">
+    <img id="img" height="200px" width="300px">
+    <button class="btn btn-secondary" id="send">Open Camera</button>
+</div>
+
+<div class="input-group">
+    <button class="mt10 btn btn-primary">Lampu Depan (ON)</button>
+    <button class="mt10 btn btn-primary">Lampu Kamar (ON)</button>
+    <button class="mt10 btn btn-primary">Lampu Belakang (ON)</button>
+    <button class="mt10 btn btn-primary">Lampu Atas (ON)</button>
+    <button class="mt10 btn btn-primary">Lampu Kamar Mandi (ON)</button>
+</div>
+
+<div class="input-group" style="background-color: white;">
+    <p>Suhu kamar       : 34</p>
+    <p>Suhu ruang kerja : 30</p>
+    <p>Suhu dapur       : 29</p>
+</div>
+
 </body>
 </html>
